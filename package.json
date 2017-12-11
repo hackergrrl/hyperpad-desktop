@@ -1,0 +1,24 @@
+{
+  "name": "hyperpad-desktop",
+  "description": "Peer-to-peer collaborative text editing on your desktop with Electron.",
+  "author": "Stephen Whitmore <sww@eight.net>",
+  "version": "0.0.0",
+  "repository": {
+    "url": "git://github.com/noffle/hyperpad-desktop.git"
+  },
+  "homepage": "https://github.com/noffle/hyperpad-desktop",
+  "bugs": "https://github.com/noffle/hyperpad-desktop/issues",
+  "main": "app.js",
+  "scripts": {
+    "test": "tape test/*.js",
+    "lint": "standard"
+  },
+  "keywords": [
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "tape": "~4.6.2",
+    "standard": "~10.0.0"
+  },
+  "license": "ISC"
+}
