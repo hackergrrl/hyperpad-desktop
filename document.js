@@ -5,7 +5,10 @@ module.exports = function () {
     modules: { toolbar: '' },
     theme: 'snow'
   });
-  var editor = document.getElementById('editor')
-  editor.style.height = window.innerHeight + 'px';
-  editor.style['font-family'] = '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace'
+  var editorElement = document.getElementById('editor')
+  editorElement.style.height = window.innerHeight + 'px';
+  editorElement.style['font-family'] = '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace'
+
+  editor.focus()
 }
+
