@@ -48,6 +48,12 @@ function createMainWindow () {
       win = null
       app.quit()
     })
+
+    var ipc = electron.ipcMain
+
+    ipc.on('get-user-data-path', function (ev) {
+      ev.returnValue = userDataPath
+    })
   }
 
   return win

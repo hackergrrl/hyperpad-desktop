@@ -10,18 +10,20 @@
   "bugs": "https://github.com/noffle/hyperpad-desktop/issues",
   "main": "app.js",
   "scripts": {
-    "test": "tape test/*.js",
-    "lint": "standard"
+    "lint": "standard",
+    "rebuild-leveldb": "cd node_modules/leveldown && cross-env HOME=~/.electron-gyp node-gyp rebuild --target=1.4.15 --runtime=electron --arch=x64 --dist-url=https://atom.io/download/atom-shell"
   },
   "keywords": [],
   "dependencies": {
     "electron": "^1.4.15",
     "hyper-string": "^3.0.1",
+    "level": "^2.1.1",
     "mkdirp": "^0.5.1",
     "quill": "^1.3.4"
   },
   "devDependencies": {
-    "tape": "~4.6.2",
+    "cross-env": "^5.1.1",
+    "cross-spawn": "^5.1.0",
     "standard": "~10.0.0"
   },
   "license": "ISC"

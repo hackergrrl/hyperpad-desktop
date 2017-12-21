@@ -1,6 +1,10 @@
 var Quill = require('quill')
 var hstring = require('hyper-string')
-var memdb = require('memdb')  // TODO(noffle): use real level storage
+
+var level = require('level')
+var path = require('path')
+
+var ipc = require('electron').ipcRenderer
 
 module.exports = function () {
   var editor = new Quill('#editor', {
@@ -13,7 +17,13 @@ module.exports = function () {
 
   editor.focus()
 
-  var str = hstring(memdb())
+  var userDataPath = ipc.sendSync('get-user-data-path')
+  console.log('udp', userDataPath)
+  var docId = Math.random().toString().substring(2)
+  docId = 'test-doc'
+  var docPath = path.join(userDataPath, docId)
+
+  var str = hstring(level(docPath))
   str.insert(null, null, 'Hello world', function () {
     str.text(function (err, text) {
       if (err) throw err
