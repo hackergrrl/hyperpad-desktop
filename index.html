@@ -1,2 +1,26 @@
 <h1>hyperpad</h1>
-welcome my friend
+
+<!-- Include Quill stylesheet -->
+<link href="quill.snow.css" rel="stylesheet">
+
+<!-- Create the toolbar container -->
+<div id="toolbar">
+  <button class="ql-bold">Bold</button>
+  <button class="ql-italic">Italic</button>
+</div>
+
+<!-- Create the editor container -->
+<div id="editor">
+  <p>Hello World!</p>
+</div>
+
+<!-- Initialize Quill editor -->
+<script>
+  var Quill = require('quill')
+  var editor = new Quill('#editor', {
+    modules: { toolbar: '#toolbar' },
+    theme: 'snow'
+  });
+  var editor = document.getElementById('editor')
+  editor.style.height = window.innerHeight + 'px';
+</script>
