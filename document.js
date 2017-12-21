@@ -24,45 +24,73 @@ module.exports = function () {
   var docPath = path.join(userDataPath, docId)
 
   var str = hstring(level(docPath))
-    str.text(function (err, text) {
+  var chars
+  var opQueue = []
+
+  str.chars(function (err, res) {
+    if (err) throw err
+    chars = res
+
+    var text = chars.map(function (c) { return c.chr }).join('')
+    editor.insertText(0, text)
+
+    listenForEdits()
+  })
+
+  var queueLocked = false
+  function processQueue () {
+    // console.log('processQueue', opQueue.length)
+    if (!opQueue.length) {
+      // console.log('bail: empty')
+      queueLocked = false
+      return
+    }
+    if (queueLocked) {
+      // console.log('bail: locked')
+      return
+    }
+    // console.log('gonna process')
+    queueLocked = true
+
+    var ops = opQueue.shift()
+
+    var pos = 0
+    var opIdx = 0
+    ;(function next (err) {
       if (err) throw err
-      editor.insertText(0, text)
-      listenForEdits()
-    })
+      var op = ops[opIdx]
+      if (!op) {
+        // console.log('done processing op')
+        queueLocked = false
+        processQueue()
+        return
+      }
+      opIdx++
+
+      if (op.retain) {
+        pos += op.retain
+        next()
+      }
+      if (op.insert) {
+        var after = pos > 0 ? chars[pos - 1].pos : null
+        var before = pos < chars.length ? chars[pos].pos : null
+        console.log('insert', after, before, op.insert)
+        str.insert(after, before, op.insert, function (err, res) {
+          if (err) throw err
+          // console.log('insert res', res)
+          chars.splice.apply(chars, [pos, 0].concat(res))
+          // console.log('chars', chars)
+          next()
+        })
+      }
+    })()
+  }
 
   function listenForEdits () {
-    // TODO: lock editor until changes are processed
     editor.on('text-change', function (delta, oldDelta, source) {
-      var pos = 0
-      var opIdx = 0
-      ;(function next (err) {
-        if (err) throw err
-        var op = delta.ops[opIdx]
-        if (!op) return
-        opIdx++
-
-        str.chars(function (err, chars) {
-          if (err) throw err
-          // console.log('chars', chars)
-
-          if (op.retain) {
-            pos += op.retain
-            next()
-          }
-          if (op.insert) {
-            var after = pos > 0 ? chars[pos - 1].pos : null
-            var before = pos < chars.length ? chars[pos].pos : null
-            // console.log('insert', after, before, op.insert)
-            str.insert(after, before, op.insert, next)
-          }
-        })
-      })()
-
-      if (source == 'api') {
-        console.log("An API call triggered this change.");
-      } else if (source == 'user') {
-        console.log("A user action triggered this change.");
-      }
+      console.log('got op', delta.ops)
+      opQueue.push(delta.ops)
+      processQueue()
     })
   }
 }
