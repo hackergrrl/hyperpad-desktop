@@ -39,8 +39,10 @@ function createMainWindow () {
     var INDEX = 'file://' + path.resolve(__dirname, './index.html')
     if (!win) {
       win = new BrowserWindow({title: APP_NAME, show: false})
-      win.once('ready-to-show', () => win.show())
-      win.maximize()
+      win.once('ready-to-show', function () {
+        win.show()
+        win.maximize()
+      })
     }
     // if (argv.debug) win.webContents.openDevTools()
     win.loadURL(INDEX)
