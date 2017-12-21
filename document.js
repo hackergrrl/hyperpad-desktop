@@ -70,8 +70,7 @@ module.exports = function () {
       if (op.retain) {
         pos += op.retain
         next()
-      }
-      if (op.insert) {
+      } else if (op.insert) {
         var after = pos > 0 ? chars[pos - 1].pos : null
         var before = pos < chars.length ? chars[pos].pos : null
         console.log('insert', after, before, op.insert)
@@ -79,6 +78,17 @@ module.exports = function () {
           if (err) throw err
           // console.log('insert res', res)
           chars.splice.apply(chars, [pos, 0].concat(res))
+          // console.log('chars', chars)
+          next()
+        })
+      } else if (op.delete) {
+        var from = chars[pos].pos
+        var to = chars[pos + op.delete - 1].pos
+        console.log('delete', from, to, op.delete)
+        str.delete(from, to, function (err, res) {
+          if (err) throw err
+          // console.log('delete', op.delete)
+          chars.splice(pos, op.delete)
           // console.log('chars', chars)
           next()
         })
