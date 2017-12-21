@@ -25,7 +25,19 @@ module.exports = function () {
 
   var str = hstring(level(docPath))
   var chars
-  var opQueue = []
+  var localOpQueue = []
+  var remoteOpQueue = []
+
+  // Receive remote edits
+  str.log.on('add', function (node) {
+    if (Buffer.isBuffer(node.value)) {
+      var data = JSON.parse(node.value.toString())
+      data.key = node.key
+      console.log('remote add', data)
+      remoteOpQueue.push(data)
+      processQueue()
+    }
+  })
 
   str.chars(function (err, res) {
     if (err) throw err
@@ -39,8 +51,11 @@ module.exports = function () {
 
   var queueLocked = false
   function processQueue () {
-    // console.log('processQueue', opQueue.length)
-    if (!opQueue.length) {
+    // console.log('processQueue', localOpQueue.length)
+    if (!localOpQueue.length) {
+      if (remoteOpQueue.length) {
+        processRemoteOps()
+      }
       // console.log('bail: empty')
       queueLocked = false
       return
@@ -52,7 +67,7 @@ module.exports = function () {
     // console.log('gonna process')
     queueLocked = true
 
-    var ops = opQueue.shift()
+    var ops = localOpQueue.shift()
 
     var pos = 0
     var opIdx = 0
@@ -71,6 +86,7 @@ module.exports = function () {
         pos += op.retain
         next()
       } else if (op.insert) {
+        console.log('op.insert', pos, chars.length)
         var after = pos > 0 ? chars[pos - 1].pos : null
         var before = pos < chars.length ? chars[pos].pos : null
         console.log('insert', after, before, op.insert)
@@ -96,10 +112,51 @@ module.exports = function () {
     })()
   }
 
+  // XXX(sww): remember, this function MUST stay synchronous. if it becomes async, ALL CONCURRENT HELL BREAKS LOOSE
+  function processRemoteOps () {
+    remoteOpQueue.forEach(function (op) {
+      if (op.op === 'insert') {
+        // Update 'chars'
+        var prev = getPosOfKey(op.prev)
+        // var next = getPosOfKey(op.next)
+        var newChars = op.txt.split('').map(function (chr, idx) {
+          return {
+            chr: chr,
+            pos: op.key + '@' + idx
+          }
+        })
+        chars.splice(prev + 1, 0, newChars)
+        console.log('post-remote chars', chars)
+
+        // Update editor
+        editor.insertText(prev + 1, op.txt)
+      } else if (op.op === 'delete') {
+        // Update 'chars'
+        var from = getPosOfKey(op.from)
+        var to = getPosOfKey(op.to)
+        var numToDelete = from - to
+        chars.splice(from, numToDelete)
+        console.log('post-remote chars', chars)
+
+        // Update editor
+        editor.deleteText(from, numToDelete)
+      }
+    })
+    remoteOpQueue = []
+  }
+
+  function getPosOfKey (key) {
+    if (!key) return 0
+    for (var i = 0; i < chars.length; i++) {
+      if (chars[i].pos === key) return i
+    }
+    throw new Error('this should not happen')
+  }
+
   function listenForEdits () {
     editor.on('text-change', function (delta, oldDelta, source) {
       console.log('got op', delta.ops)
-      opQueue.push(delta.ops)
+      localOpQueue.push(delta.ops)
       processQueue()
     })
   }
