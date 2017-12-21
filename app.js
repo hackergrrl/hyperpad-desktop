@@ -1,34 +1,31 @@
 #!/usr/bin/env electron
 
 var path = require('path')
+var mkdirp = require('mkdirp')
 var electron = require('electron')
 var app = electron.app  // Module to control application life.
 var BrowserWindow = electron.BrowserWindow  // Module to create native browser window.
 
 var APP_NAME = 'Hyperpad'
-
 var win = null
 
-// Listen for app-ready event
-var appIsReady = false
-app.once('ready', function () {
-  appIsReady = true
-})
+// Set up app storage dir
+var userDataPath = path.join(app.getPath('userData'), 'hyperpad')
+mkdirp.sync(userDataPath)
+console.log(userDataPath)
 
 // Set up global node exception handler
 handleUncaughtExceptions()
 
+// Create app window
 createMainWindow()
 
+//---------------------------------------------------------------------------
 
 function createMainWindow () {
   var win
 
-  if (!appIsReady) {
-    app.once('ready', ready)
-  } else {
-    ready()
-  }
+  app.once('ready', ready)
 
   // Quit when all windows are closed.
   app.on('window-all-closed', function () {
