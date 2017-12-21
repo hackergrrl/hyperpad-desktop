@@ -28,6 +28,18 @@ module.exports = function () {
   var localOpQueue = []
   var remoteOpQueue = []
 
+  // HACK: a random 'remote user' that writes random text
+  var rando = hstring(require('memdb')())
+  var r = rando.log.replicate({live: true})
+  r.pipe(str.log.replicate({live: true})).pipe(r)
+  setInterval(function () {
+    rando.chars(function (err, chars) {
+      var pos = Math.floor(Math.random() * (chars.length-2) + 1)
+      var text = (new Array(Math.floor(Math.random() * 10))).fill(0).map(function () { return String(Math.floor(Math.random() * 10)) }).join('')
+      rando.insert(chars[pos].pos, chars[pos+1].pos, text)
+    })
+  }, 4000)
+
   // Receive remote edits
   str.log.on('add', function (node) {
     if (Buffer.isBuffer(node.value)) {
