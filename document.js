@@ -36,13 +36,7 @@ module.exports = function () {
   setInterval(function () {
     var pos = last ? last : null
     var text = String(Math.floor(Math.random() * 10))
-    var next = null
-    // var next = getPosOfKey(last)
-    // if (next && next === 0) next = chars[0].pos
-    // if (next && next < chars.length - 1) next = chars[next + 1].pos
-    // if (!next) next = null
-    console.log('last', last, next)
-    rando.insert(last, next, text, function (err, res) {
+    rando.insert(last, null, text, function (err, res) {
       last = res[0].pos
 
       // HACK: verify incremental 'chars' index vs the real thing
@@ -54,7 +48,7 @@ module.exports = function () {
         }
       })
     })
-  }, 500)
+  }, 1000)
 
   // Receive remote edits
   str.log.on('add', function (node) {
