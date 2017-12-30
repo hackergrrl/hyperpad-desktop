@@ -67,6 +67,7 @@ module.exports = function () {
     if (!localOpQueue.length) {
       if (remoteOpQueue.length) {
         processRemoteOps()
+        return
       }
       // console.log('bail: empty')
       queueLocked = false
@@ -141,7 +142,7 @@ module.exports = function () {
         console.log('post-remote chars', chars)
 
         // Update editor
-        editor.insertText(prev + 1, op.txt)
+        editor.insertText(prev + 1, op.txt, 'silent')
       } else if (op.op === 'delete') {
         // Update 'chars'
         var from = getPosOfKey(op.from)
@@ -151,7 +152,7 @@ module.exports = function () {
         console.log('post-remote chars', chars)
 
         // Update editor
-        editor.deleteText(from, numToDelete)
+        editor.deleteText(from, numToDelete, 'silent')
       }
     })
     remoteOpQueue = []
