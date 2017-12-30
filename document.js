@@ -32,20 +32,36 @@ module.exports = function () {
   var rando = hstring(require('memdb')())
   var r = rando.log.replicate({live: true})
   r.pipe(str.log.replicate({live: true})).pipe(r)
+  var last = null
   setInterval(function () {
-    rando.chars(function (err, chars) {
-      var pos = Math.floor(Math.random() * (chars.length-2) + 1)
-      var text = (new Array(Math.floor(Math.random() * 10))).fill(0).map(function () { return String(Math.floor(Math.random() * 10)) }).join('')
-      rando.insert(chars[pos].pos, chars[pos+1].pos, text)
+    var pos = last ? last : null
+    var text = String(Math.floor(Math.random() * 10))
+    var next = null
+    // var next = getPosOfKey(last)
+    // if (next && next === 0) next = chars[0].pos
+    // if (next && next < chars.length - 1) next = chars[next + 1].pos
+    // if (!next) next = null
+    console.log('last', last, next)
+    rando.insert(last, next, text, function (err, res) {
+      last = res[0].pos
+
+      // HACK: verify incremental 'chars' index vs the real thing
+      str.chars(function (err, c) {
+        for (var i=0; i < Math.max(c.length, chars.length); i++) {
+          if ((!c[i] || !chars[i]) || c[i].chr !== chars[i].chr || c[i].pos !== chars[i].pos) {
+            console.log('STATE MISMATCH', chars[i], 'real is', c[i])
+          }
+        }
+      })
     })
-  }, 4000)
+  }, 500)
 
   // Receive remote edits
   str.log.on('add', function (node) {
     if (Buffer.isBuffer(node.value)) {
       var data = JSON.parse(node.value.toString())
       data.key = node.key
-      console.log('remote add', data)
+      // console.log('remote add', data)
       remoteOpQueue.push(data)
       processQueue()
     }
@@ -138,18 +154,18 @@ module.exports = function () {
             pos: op.key + '@' + idx
           }
         })
-        chars.splice.apply(chars, [prev + 1, 0].concat(newChars))
-        console.log('post-remote chars', chars)
+        if (prev === -1) prev = 0
+        else prev++
+        chars.splice.apply(chars, [prev, 0].concat(newChars))
 
         // Update editor
-        editor.insertText(prev + 1, op.txt, 'silent')
+        editor.insertText(prev, op.txt, 'silent')
       } else if (op.op === 'delete') {
         // Update 'chars'
         var from = getPosOfKey(op.from)
         var to = getPosOfKey(op.to)
         var numToDelete = from - to
         chars.splice(from, numToDelete)
-        console.log('post-remote chars', chars)
 
         // Update editor
         editor.deleteText(from, numToDelete, 'silent')
