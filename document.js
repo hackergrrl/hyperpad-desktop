@@ -138,7 +138,7 @@ module.exports = function () {
             pos: op.key + '@' + idx
           }
         })
-        chars.splice(prev + 1, 0, newChars)
+        chars.splice.apply(chars, [prev + 1, 0].concat(newChars))
         console.log('post-remote chars', chars)
 
         // Update editor
@@ -159,7 +159,7 @@ module.exports = function () {
   }
 
   function getPosOfKey (key) {
-    if (!key) return 0
+    if (!key) return -1
     for (var i = 0; i < chars.length; i++) {
       if (chars[i].pos === key) return i
     }
