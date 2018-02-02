@@ -30,26 +30,37 @@ module.exports = function () {
   var remoteOpQueue = []
 
   // HACK: a random 'remote user' that writes random text
-  var rando = hstring(require('memdb')())
-  var r = rando.log.replicate({live: true})
-  r.pipe(str.log.replicate({live: true})).pipe(r)
-  var last = null
-  setInterval(function () {
-    var pos = last ? last : null
-    var text = String(Math.floor(Math.random() * 10))
-    rando.insert(last, null, text, function (err, res) {
-      last = res[0].pos
+  function startTest () {
+    var rando = hstring(require('memdb')())
+    var r = rando.log.replicate({live: true})
+    r.pipe(str.log.replicate({live: true})).pipe(r)
+    var last = null
+    var nnn = 0
+    setInterval(function () {
+      var text = String(Math.floor(Math.random() * 10))
+      var prevPos = Math.floor(Math.random() * rando.data.chars().length)
+      var prev = rando.data.chars()[prevPos] || null
+      var next = rando.data.chars()[prevPos + 1] || null
+      if (prev) prev = prev.pos
+      if (next) next = next.pos
 
-      // HACK: verify incremental 'chars' index vs the real thing
-      str.chars(function (err, c) {
-        for (var i=0; i < Math.max(c.length, chars.length); i++) {
-          if ((!c[i] || !chars[i]) || c[i].chr !== chars[i].chr || c[i].pos !== chars[i].pos) {
-            console.log('STATE MISMATCH', chars[i], 'real is', c[i])
-          }
-        }
+      rando.insert(prev, next, text, function (err, res) {
+        setTimeout(function () {
+          // HACK: verify incremental 'chars' index vs the real thing
+          str.chars(function (err, c) {
+            console.log('local', chars.map(function (op) { return op.chr }).join(''))
+            console.log('remot', c.map(function (op) { return op.chr }).join(''))
+            for (var i=0; i < Math.max(c.length, chars.length); i++) {
+              if ((!c[i] || !chars[i]) || c[i].chr !== chars[i].chr || c[i].pos !== chars[i].pos) {
+                console.log('STATE MISMATCH', chars[i], 'real is', c[i])
+                return
+              }
+            }
+          })
+        }, 250)
       })
-    })
-  }, 1000)
+    }, 3000)
+  }
 
   // Receive remote edits
   str.log.on('add', function (node) {
