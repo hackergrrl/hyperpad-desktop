@@ -24,6 +24,7 @@ module.exports = function () {
   var docPath = path.join(userDataPath, docId)
 
   var str = hstring(level(docPath))
+  var index
   var chars
   var localOpQueue = []
   var remoteOpQueue = []
@@ -61,12 +62,16 @@ module.exports = function () {
     }
   })
 
-  str.chars(function (err, res) {
+  str.snapshot(function (err, res) {
     if (err) throw err
-    chars = res
 
-    var text = chars.map(function (c) { return c.chr }).join('')
-    editor.insertText(0, text)
+    console.log('ready!')
+    index = res
+    chars = index.chars()
+
+    startTest()
+
+    editor.insertText(0, index.text())
 
     listenForEdits()
   })
@@ -112,12 +117,12 @@ module.exports = function () {
         console.log('op.insert', pos, chars.length)
         var after = pos > 0 ? chars[pos - 1].pos : null
         var before = pos < chars.length ? chars[pos].pos : null
-        console.log('insert', after, before, op.insert)
         str.insert(after, before, op.insert, function (err, res) {
           if (err) throw err
-          // console.log('insert res', res)
-          chars.splice.apply(chars, [pos, 0].concat(res))
-          // console.log('chars', chars)
+          var key = res[0].pos.substring(0, res[0].pos.lastIndexOf('@'))
+          index.insert(after, before, op.insert, key)
+          chars = index.chars()
+          console.log('insert', after, before, op.insert, key)
           next()
         })
       } else if (op.delete) {
@@ -126,9 +131,8 @@ module.exports = function () {
         console.log('delete', from, to, op.delete)
         str.delete(from, to, function (err, res) {
           if (err) throw err
-          // console.log('delete', op.delete)
-          chars.splice(pos, op.delete)
-          // console.log('chars', chars)
+          index.delete(from, to)
+          chars = index.chars()
           next()
         })
       }
@@ -138,26 +142,20 @@ module.exports = function () {
   // XXX(sww): remember, this function MUST stay synchronous. if it becomes async, ALL CONCURRENT HELL BREAKS LOOSE
   function processRemoteOps () {
     remoteOpQueue.forEach(function (op) {
+      console.log('remote op', op)
       if (op.op === 'insert') {
-        // Update 'chars'
-        var prev = getPosOfKey(op.prev)
-        // var next = getPosOfKey(op.next)
-        var newChars = op.txt.split('').map(function (chr, idx) {
-          return {
-            chr: chr,
-            pos: op.key + '@' + idx
-          }
-        })
-        if (prev === -1) prev = 0
-        else prev++
-        chars.splice.apply(chars, [prev, 0].concat(newChars))
+        // Update index
+        var res = index.insert(op.prev, op.next, op.txt, op.key)
+        var prev = index.pos(res[0])
+        chars = index.chars()
 
         // Update editor
         editor.insertText(prev, op.txt, 'silent')
       } else if (op.op === 'delete') {
-        // Update 'chars'
-        var from = getPosOfKey(op.from)
-        var to = getPosOfKey(op.to)
+        // Update index
+        var res = index.delete(op.from, op.to)
+        var from = index.pos(op.from)
+        var to = index.pos(op.to)
         var numToDelete = from - to
         chars.splice(from, numToDelete)
 
@@ -166,14 +164,6 @@ module.exports = function () {
       }
     })
     remoteOpQueue = []
-  }
-
-  function getPosOfKey (key) {
-    if (!key) return -1
-    for (var i = 0; i < chars.length; i++) {
-      if (chars[i].pos === key) return i
-    }
-    throw new Error('this should not happen')
   }
 
   function listenForEdits () {
