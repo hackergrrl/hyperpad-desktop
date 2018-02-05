@@ -13,11 +13,7 @@
   var Doc = require('./document')
   var renderDocumentList = require('./document-list')(onSelected)
 
-  var theDocs = [
-    'DigiDem Weekly Meeting',
-    '#Disasterradio :: Jan 27, 2018',
-    'LSOG Shopping List'
-  ]
+  var theDocs = []
 
   var lst = renderDocumentList(theDocs)
   document.getElementById('left').appendChild(lst)
@@ -36,17 +32,23 @@
   editorElement.classList.add('editor')
   editorElement.style['font-family'] = '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace'
 
-  function onSelected (docName) {
-    console.log('SELECTED', docName)
-    document.getElementById('doc-title').innerText = docName
+  function onSelected (hash) {
+    console.log('SELECTED', hash)
 
-    if (doc) {
-      doc.unregister(function () {
-        console.log('unregisterd')
-        doc = Doc(docName, editor)
-      })
+    if (hash === '&create') {
+      alert('TODO: implement me')
+    } else if (hash === '&add') {
+      alert('TODO: implement me')
     } else {
-      doc = Doc(docName, editor)
+      document.getElementById('doc-title').innerText = hash
+      if (doc) {
+        doc.unregister(function () {
+          console.log('unregisterd')
+          doc = Doc(hash, editor)
+        })
+      } else {
+        doc = Doc(hash, editor)
+      }
     }
   }
 </script>

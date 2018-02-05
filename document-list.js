@@ -39,12 +39,12 @@ module.exports = function (onSelected) {
 
   function onClickCreate () {
     console.log('create new pad')
-    onSelected('create')
+    onSelected('&create')
   }
 
   function onClickAdd () {
     console.log('add pad from hash')
-    onSelected('add')
+    onSelected('&add')
   }
 
   function selectDoc (elm, i) {
