@@ -1,10 +1,52 @@
-<h1>hyperpad</h1>
 
 <link href="quill.snow.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="style.css"/>
 
-<div id="editor"></div>
+<div id="left" class="left-side"></div>
+<div id="right" class="right-side">
+  <h1 id="doc-title">Untitled hyperpad document</h1>
+</div>
 
 <!-- Initialize Quill editor -->
 <script>
-  require('./document')()
+  var Quill = require('quill')
+  var Doc = require('./document')
+  var renderDocumentList = require('./document-list')(onSelected)
+
+  var theDocs = [
+    'DigiDem Weekly Meeting',
+    '#Disasterradio :: Jan 27, 2018',
+    'LSOG Shopping List'
+  ]
+
+  var lst = renderDocumentList(theDocs)
+  document.getElementById('left').appendChild(lst)
+
+  var doc
+
+  var editorElement = document.createElement("div");
+  editorElement.id = 'editor'
+  document.getElementById('right').appendChild(editorElement);
+  var editor = new Quill('#editor', {
+    modules: { toolbar: '' },
+    theme: 'snow'
+  });
+  editorElement.style.height = (window.innerHeight - 100) + 'px';
+  editorElement.style.width = (window.innerWidth - 0) + 'px';
+  editorElement.classList.add('editor')
+  editorElement.style['font-family'] = '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace'
+
+  function onSelected (docName) {
+    console.log('SELECTED', docName)
+    document.getElementById('doc-title').innerText = docName
+
+    if (doc) {
+      doc.unregister(function () {
+        console.log('unregisterd')
+        doc = Doc(docName, editor)
+      })
+    } else {
+      doc = Doc(docName, editor)
+    }
+  }
 </script>

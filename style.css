@@ -1,0 +1,44 @@
+body {
+  margin: 0;
+}
+.right-side {
+  display: table-cell;
+  width: 100%;
+}
+.left-side {
+  padding: 5px;
+  display: table-cell;
+}
+.doclist {
+  width: 350px;
+  font-size: 15px;
+  border-width: 1px 0 0 0;
+  border-style: solid;
+  border-color: #AAAAAA;
+  cursor: pointer;
+}
+.docitem {
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-color: #AAAAAA;
+}
+.docitem-selected {
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-color: #AAAAAA;
+  background: #DFDFDF;
+}
+.docitem-special {
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-color: #AAAAAA;
+  background: #F1F1F1;
+  color: #999999;
+  text-align: center;
+}
+.docitem-contents {
+  padding: 15px;
+  font-size: 20px;
+  font-family: sans-serif;
+  color: #222222;
+}

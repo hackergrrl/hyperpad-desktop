@@ -15,10 +15,12 @@
   },
   "keywords": [],
   "dependencies": {
+    "bel": "^5.1.6",
     "electron": "^1.7.5",
     "hyper-string": "^3.1.0",
     "level": "^2.1.1",
     "mkdirp": "^0.5.1",
+    "morphdom": "^2.3.3",
     "quill": "^1.3.4"
   },
   "devDependencies": {

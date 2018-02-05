@@ -1,20 +1,9 @@
-var Quill = require('quill')
 var hstring = require('hyper-string')
-
 var level = require('level')
 var path = require('path')
-
 var ipc = require('electron').ipcRenderer
 
-module.exports = function () {
-  var editor = new Quill('#editor', {
-    modules: { toolbar: '' },
-    theme: 'snow'
-  });
-  var editorElement = document.getElementById('editor')
-  editorElement.style.height = window.innerHeight + 'px';
-  editorElement.style['font-family'] = '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace'
-
+module.exports = function (docName, editor) {
   editor.focus()
 
   var userDataPath = ipc.sendSync('get-user-data-path')
@@ -23,7 +12,8 @@ module.exports = function () {
   docId = 'test-doc'
   var docPath = path.join(userDataPath, docId)
 
-  var str = hstring(level(docPath))
+  var db = level(docPath)
+  var str = hstring(db)
   var index
   var chars
   var localOpQueue = []
@@ -144,10 +134,19 @@ module.exports = function () {
 
   function listenForEdits () {
     editor.on('text-change', function (delta, oldDelta, source) {
-      console.log('got op', delta.ops)
+      console.log('got op', delta.ops, source)
       localOpQueue.push(delta.ops)
       processQueue()
     })
   }
+
+  function unregister (cb) {
+    console.log('TODO: DELETING')
+
+    editor.deleteText(0, 99999999999, 'silent')
+    db.close(cb)
+  }
+
+  return { unregister: unregister }
 }
 
