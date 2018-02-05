@@ -133,17 +133,19 @@ module.exports = function (docName, editor) {
   }
 
   function listenForEdits () {
-    editor.on('text-change', function (delta, oldDelta, source) {
-      console.log('got op', delta.ops, source)
-      localOpQueue.push(delta.ops)
-      processQueue()
-    })
+    editor.on('text-change', onTextChange)
+  }
+
+  function onTextChange (delta, oldDelta, source) {
+    console.log('got op', delta.ops, source)
+    localOpQueue.push(delta.ops)
+    processQueue()
   }
 
   function unregister (cb) {
-    console.log('TODO: DELETING')
-
     editor.deleteText(0, 99999999999, 'silent')
+    editor.removeListener('text-change', onTextChange)
+    str.log.removeAllListeners()  // TODO: we can do better!
     db.close(cb)
   }
 
