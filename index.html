@@ -7,47 +7,77 @@
   <h1 id="doc-title">Untitled hyperpad document</h1>
 </div>
 
-<!-- Initialize Quill editor -->
 <script>
   var Quill = require('quill')
   var Doc = require('./document')
-  var renderDocumentList = require('./document-list')(onSelected)
+  var createDocumentList = require('./document-list')
+  var getLocalDocs = require('./get-local-docs')
+  var randomBytes = require('randombytes')
+  var hstring = require('hyper-string')
+  var level = require('level')
+  var path = require('path')
+  var ipc = require('electron').ipcRenderer
 
-  var theDocs = []
+  var editor
+  var currentDoc
+  var docSidebar = createDocumentList(onSelected)
+  document.getElementById('left').appendChild(docSidebar)
 
-  var lst = renderDocumentList(theDocs)
-  document.getElementById('left').appendChild(lst)
+  refreshDocList(function () {
+    start()
+  })
 
-  var doc
+  function refreshDocList (cb) {
+    getLocalDocs(function (err, docs) {
+      if (err) throw err
+      docSidebar.updateDocs(docs)
+      cb()
+    })
+  }
 
-  var editorElement = document.createElement("div");
-  editorElement.id = 'editor'
-  document.getElementById('right').appendChild(editorElement);
-  var editor = new Quill('#editor', {
-    modules: { toolbar: '' },
-    theme: 'snow'
-  });
-  editorElement.style.height = (window.innerHeight - 100) + 'px';
-  editorElement.style.width = (window.innerWidth - 0) + 'px';
-  editorElement.classList.add('editor')
-  editorElement.style['font-family'] = '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace'
+  function start () {
+    var editorElement = document.createElement("div");
+    editorElement.id = 'editor'
+    document.getElementById('right').appendChild(editorElement);
+    editor = new Quill('#editor', {
+      modules: { toolbar: '' },
+      theme: 'snow'
+    });
+    editorElement.style.height = (window.innerHeight - 100) + 'px';
+    editorElement.style.width = (window.innerWidth - 0) + 'px';
+    editorElement.classList.add('editor')
+    editorElement.style['font-family'] = '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace'
+  }
 
   function onSelected (hash) {
     console.log('SELECTED', hash)
 
     if (hash === '&create') {
-      alert('TODO: implement me')
+      var hash = randomBytes(20).toString('hex')
+      var userDataPath = ipc.sendSync('get-user-data-path')
+      var docPath = path.join(userDataPath, hash)
+      var db = level(docPath)
+      var str = hstring(db)
+      // TODO: break this out into hyper-doc module (named document)
+      str.log.append({'doc-id': hash, 'doc-name': hash}, function (err) {
+        db.close(function () {
+          getLocalDocs(function (err, docs) {
+            if (err) throw err
+            docSidebar.updateDocs(docs)
+            docSidebar.updateSelection(docs.indexOf(hash))
+          })
+        })
+      })
     } else if (hash === '&add') {
       alert('TODO: implement me')
     } else {
       document.getElementById('doc-title').innerText = hash
-      if (doc) {
-        doc.unregister(function () {
-          console.log('unregisterd')
-          doc = Doc(hash, editor)
+      if (currentDoc) {
+        currentDoc.unregister(function () {
+          currentDoc = Doc(hash, editor)
         })
       } else {
-        doc = Doc(hash, editor)
+        currentDoc = Doc(hash, editor)
       }
     }
   }

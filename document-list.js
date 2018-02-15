@@ -3,7 +3,24 @@ var morph = require('morphdom')
 
 module.exports = function (onSelected) {
 
-  return renderList
+  var docs = []
+  var selectedIdx = -1
+  var element = renderList(docs, selectedIdx)
+
+  element.updateDocs = function (items) {
+    docs = items
+    update()
+  }
+
+  element.updateSelection = function (idx) {
+    selectDoc(docs[idx], idx)
+  }
+
+  return element
+
+  function update () {
+    morph(element, renderList(docs, selectedIdx))
+  }
 
   function renderList (elms, selected) {
     var extra = [renderCreateDocRow(), renderAddDocRow()]
@@ -33,7 +50,7 @@ module.exports = function (onSelected) {
       <div class="docitem-contents">${elm}</div>
     </div>`
     function onClick () {
-      selectDoc(elm, i)
+      selectDoc(docs[i], i)
     }
   }
 
@@ -49,7 +66,8 @@ module.exports = function (onSelected) {
 
   function selectDoc (elm, i) {
     console.log('got select', elm, i)
-    morph(lst, renderList(theDocs, i))
+    selectedIdx = i
+    update()
     onSelected(elm)
   }
 }

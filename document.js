@@ -7,10 +7,8 @@ module.exports = function (docName, editor) {
   editor.focus()
 
   var userDataPath = ipc.sendSync('get-user-data-path')
-  console.log('udp', userDataPath)
-  var docId = Math.random().toString().substring(2)
-  docId = 'test-doc'
-  var docPath = path.join(userDataPath, docId)
+  console.log('udp', userDataPath, docName)
+  var docPath = path.join(userDataPath, docName)
 
   var db = level(docPath)
   var str = hstring(db)
@@ -143,8 +141,9 @@ module.exports = function (docName, editor) {
   }
 
   function unregister (cb) {
+    console.log('unreg editor', editor)
     editor.deleteText(0, 99999999999, 'silent')
-    editor.removeListener('text-change', onTextChange)
+    editor.off('text-change', onTextChange)
     str.log.removeAllListeners()  // TODO: we can do better!
     db.close(cb)
   }
