@@ -55,17 +55,14 @@ module.exports = function (onSelected) {
   }
 
   function onClickCreate () {
-    console.log('create new pad')
     onSelected('&create')
   }
 
   function onClickAdd () {
-    console.log('add pad from hash')
     onSelected('&add')
   }
 
   function selectDoc (elm, i) {
-    console.log('got select', elm, i)
     selectedIdx = i
     update()
     onSelected(elm)
