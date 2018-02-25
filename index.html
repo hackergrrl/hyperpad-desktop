@@ -74,10 +74,12 @@
       document.getElementById('doc-title').innerText = hash
       if (currentDoc) {
         currentDoc.unregister(function () {
-          currentDoc = Doc(hash, editor)
+          var userDataPath = ipc.sendSync('get-user-data-path')
+          currentDoc = Doc(hash, editor, userDataPath)
         })
       } else {
-        currentDoc = Doc(hash, editor)
+        var userDataPath = ipc.sendSync('get-user-data-path')
+        currentDoc = Doc(hash, editor, userDataPath)
       }
     }
   }

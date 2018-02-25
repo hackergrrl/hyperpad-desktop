@@ -1,15 +1,11 @@
 var hstring = require('hyper-string')
 var level = require('level')
 var path = require('path')
-var ipc = require('electron').ipcRenderer
 
-module.exports = function (docName, editor) {
+module.exports = function (docName, editor, userDataPath) {
   editor.focus()
 
-  var userDataPath = ipc.sendSync('get-user-data-path')
-  console.log('udp', userDataPath, docName)
   var docPath = path.join(userDataPath, docName)
-
   var db = level(docPath)
   var str = hstring(db)
   var index
