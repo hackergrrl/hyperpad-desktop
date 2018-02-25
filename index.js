@@ -8,14 +8,14 @@ var level = require('level')
 var path = require('path')
 var ipc = require('electron').ipcRenderer
 
+// TODO: turn this source file into a choo-like/bel-like component
+
 var editor
 var currentDoc
 var docSidebar = createDocumentList(onSelected)
 document.getElementById('left').appendChild(docSidebar)
 
-refreshDocList(function () {
-  start()
-})
+refreshDocList(start)
 
 function refreshDocList (cb) {
   getLocalDocs(function (err, docs) {
