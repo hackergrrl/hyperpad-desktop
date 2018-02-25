@@ -12,7 +12,7 @@ var win = null
 // Set up app storage dir
 var userDataPath = path.join(app.getPath('userData'), 'hyperpad')
 mkdirp.sync(userDataPath)
-console.log(userDataPath)
+// console.log(userDataPath)
 
 // Set up global node exception handler
 handleUncaughtExceptions()
