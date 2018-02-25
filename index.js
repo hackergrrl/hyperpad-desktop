@@ -65,11 +65,11 @@ function onSelected (hash) {
     if (currentDoc) {
       currentDoc.unregister(function () {
         var userDataPath = ipc.sendSync('get-user-data-path')
-        currentDoc = Doc(hash, editor, userDataPath)
+        currentDoc = Doc(path.join(userDataPath, hash), editor)
       })
     } else {
       var userDataPath = ipc.sendSync('get-user-data-path')
-      currentDoc = Doc(hash, editor, userDataPath)
+      currentDoc = Doc(path.join(userDataPath, hash), editor)
     }
   }
 }

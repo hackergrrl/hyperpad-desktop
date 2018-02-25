@@ -2,10 +2,9 @@ var hstring = require('hyper-string')
 var level = require('level')
 var path = require('path')
 
-module.exports = function (docName, editor, userDataPath) {
+module.exports = function (docPath, editor) {
   editor.focus()
 
-  var docPath = path.join(userDataPath, docName)
   var db = level(docPath)
   var str = hstring(db)
   var index
