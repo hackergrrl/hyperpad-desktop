@@ -73,6 +73,9 @@ function renderEditor () {
   editorElement.style.width = (window.innerWidth - 0) + 'px'
   editorElement.classList.add('editor')
   editorElement.style['font-family'] = '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace'
+  editorElement.isSameNode = function (target) {
+      return (target && target.nodeName && target.nodeName === 'DIV')
+  }
   return editorElement
 }
 
