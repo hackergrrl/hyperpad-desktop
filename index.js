@@ -1,10 +1,7 @@
 var Quill = require('quill')
 var Doc = require('./document')
 var renderDocumentList = require('./document-list')
-var getLocalDocs = require('./get-local-docs')
-var randomBytes = require('randombytes')
-var hstring = require('hyper-string')
-var level = require('level')
+var localDocs = require('./local-docs')
 var path = require('path')
 var ipc = require('electron').ipcRenderer
 
@@ -29,7 +26,7 @@ app.use(function (state, emitter) {
   refreshDocList()
 
   function refreshDocList () {
-    getLocalDocs(function (err, docs) {
+    localDocs.list(function (err, docs) {
       if (err) throw err
       state.documents = docs
       emitter.emit('render')
@@ -37,7 +34,10 @@ app.use(function (state, emitter) {
   }
 
   emitter.on('createDocument', function () {
-    createDocument(refreshDocList)
+    localDocs.create(function (err, hash) {
+      state.documents.unshift({ hash: hash, title: hash })
+      emitter.emit('selectDocument', 0)
+    })
   })
 
   emitter.on('addDocument', function (hash) {
@@ -143,20 +143,6 @@ function renderEditor (state) {
   }
   editorElm = editorElement
   return editorElement
-}
-
-function createDocument (cb) {
-  var name = randomBytes(20).toString('hex')
-  var userDataPath = ipc.sendSync('get-user-data-path')
-  var docPath = path.join(userDataPath, name)
-  var db = level(docPath)
-  var str = hstring(db)
-
-  // TODO: break this out into hyper-doc module (named document; comments; members; etc)
-  str.log.append({type: 'id', id: name}, function (err) {
-    // TODO: emit a choo-event that will focus the newly created document
-    db.close(cb)
-  })
 }
 
 function addDocument () {
