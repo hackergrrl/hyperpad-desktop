@@ -11,43 +11,51 @@ module.exports = {
 }
 
 function create (cb) {
-  var name = randomBytes(20).toString('hex')
+  var id = randomBytes(20).toString('hex')
   var userDataPath = ipc.sendSync('get-user-data-path')
-  var docPath = path.join(userDataPath, name)
+  var docPath = path.join(userDataPath, id)
   var db = level(docPath)
   var str = hstring(db)
 
+  // update doc list
+  var docListPath = path.join(userDataPath, 'docs.json')
+  var docList
+  if (fs.existsSync(docListPath)) {
+    docList = JSON.parse(fs.readFileSync(docListPath, 'utf8'))
+  } else {
+    docList = { docs: [] }
+  }
+  docList.docs.unshift(id)
+  fs.writeFileSync(docListPath, JSON.stringify(docList), 'utf8')
+
   // TODO: break this out into hyper-doc module (named document; comments; members; etc)
-  str.log.append({type: 'id', id: name}, function (err) {
+  str.log.append({type: 'id', id: id}, function (err) {
     db.close(function () {
-      cb(null, name)
+      cb(null, id)
     })
   })
 }
 
 function list (cb) {
   var userDataPath = ipc.sendSync('get-user-data-path')
-  fs.readdir(userDataPath, function (err, contents) {
-    if (err) return cb(err)
 
-    // get all titles
-    var pending = contents.length
-    contents.forEach(function (name, idx) {
-      fs.stat(path.join(userDataPath, name), function (err, stats) {
-        if (err) throw err
-        console.log('ctime', name, stats.birthtime)
-        var db = level(path.join(userDataPath, name))
-        db.get('!doc!title', function (err, title) {
-          db.close(function () {
-            contents[idx] = { hash: name, title: title || name, ctime: stats.birthtime }
-            if (!--pending) {
-              // sort entries by local modification time
-              contents.sort(function (a, b) {
-                return b.ctime - a.ctime
-              })
-              cb(null, contents)
-            }
-          })
+  // update doc list
+  var docListPath = path.join(userDataPath, 'docs.json')
+  var hashes = []
+  if (fs.existsSync(docListPath)) {
+    hashes = JSON.parse(fs.readFileSync(docListPath, 'utf8')).docs
+  }
+
+  // get all titles
+  var pending = hashes.length
+  hashes.forEach(function (name, idx) {
+    fs.stat(path.join(userDataPath, name), function (err, stats) {
+      if (err) throw err
+      var db = level(path.join(userDataPath, name))
+      db.get('!doc!title', function (err, title) {
+        db.close(function () {
+          hashes[idx] = { hash: name, title: title || name }
+          if (!--pending) cb(null, hashes)
         })
       })
     })
