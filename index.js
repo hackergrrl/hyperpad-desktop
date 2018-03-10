@@ -31,7 +31,7 @@ app.use(function (state, emitter) {
   function refreshDocList () {
     getLocalDocs(function (err, docs) {
       if (err) throw err
-      state.documents = docs.map(function (hash) { return { hash: hash, title: 'u'+hash } })
+      state.documents = docs
       emitter.emit('render')
     })
   }
