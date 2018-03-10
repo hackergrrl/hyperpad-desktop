@@ -81,7 +81,7 @@ function mainView (state, emit) {
       </div>
       <div id="right" class="right-side">
         ${renderDocumentTitle(state, emit)}
-        ${renderEditor()}
+        ${renderEditor(state)}
       </div>
     </body>
   `
@@ -122,8 +122,13 @@ function renderDocumentTitle (state, emit) {
 
 // TODO: can I do this in a more choo-like way?
 var editorElm
-function renderEditor () {
-  if (editorElm) return editorElm
+function renderEditor (state) {
+  if (editorElm) {
+    if (state.selectedDocumentIdx >= 0) {
+      editorElm.style.display = 'block'
+    }
+    return editorElm
+  }
 
   var editorElement = document.createElement("div")
   editorElement.id = 'editor'
@@ -132,6 +137,7 @@ function renderEditor () {
   }
   editorElement.classList.add('editor')
   editorElement.style['font-family'] = '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace'
+  editorElement.style.display = 'none'
   editorElement.isSameNode = function (target) {
       return (target && target.nodeName && target.nodeName === 'DIV')
   }
