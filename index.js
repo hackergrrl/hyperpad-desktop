@@ -37,12 +37,10 @@ app.use(function (state, emitter) {
   }
 
   emitter.on('createDocument', function () {
-    console.log('event: createDocument')
     createDocument(refreshDocList)
   })
 
   emitter.on('addDocument', function (hash) {
-    console.log('event: addDocument')
     addDocument(hash)
   })
 
@@ -101,7 +99,6 @@ function renderDocumentTitle (state, emit) {
   }
 
   function onClick () {
-    console.log('clicky')
     emit('clickDocumentTitle')
   }
 
@@ -109,7 +106,6 @@ function renderDocumentTitle (state, emit) {
     if (ev.keyCode === 27) {
       emit('setDocumentTitle', null)
     } else if (ev.keyCode === 13) {
-      console.log('title', this.value)
       emit('setDocumentTitle', this.value)
     }
   }
@@ -124,16 +120,22 @@ function renderDocumentTitle (state, emit) {
   }
 }
 
+// TODO: can I do this in a more choo-like way?
+var editorElm
 function renderEditor () {
+  if (editorElm) return editorElm
+
   var editorElement = document.createElement("div")
   editorElement.id = 'editor'
-  editorElement.style.height = (window.innerHeight - 100) + 'px'
-  editorElement.style.width = (window.innerWidth - 0) + 'px'
+  window.onresize = function () {
+    editorElement.style.height = (window.innerHeight - 80) + 'px'
+  }
   editorElement.classList.add('editor')
   editorElement.style['font-family'] = '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace'
   editorElement.isSameNode = function (target) {
       return (target && target.nodeName && target.nodeName === 'DIV')
   }
+  editorElm = editorElement
   return editorElement
 }
 
@@ -143,8 +145,10 @@ function createDocument (cb) {
   var docPath = path.join(userDataPath, name)
   var db = level(docPath)
   var str = hstring(db)
-  // TODO: break this out into hyper-doc module (named document)
-  str.log.append({type: 'id', name}, function (err) {
+
+  // TODO: break this out into hyper-doc module (named document; comments; members; etc)
+  str.log.append({type: 'id', id: name}, function (err) {
+    // TODO: emit a choo-event that will focus the newly created document
     db.close(cb)
   })
 }
