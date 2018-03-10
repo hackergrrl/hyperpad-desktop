@@ -1,16 +1,40 @@
 var hstring = require('hyper-string')
 var level = require('level')
 var path = require('path')
+var hindex = require('hyperlog-index')
+var sublevel = require('subleveldown')
 
-module.exports = function (docPath, editor) {
+module.exports = function (docPath, editor, emitter) {
   editor.focus()
 
   var db = level(docPath)
   var str = hstring(db)
+  var title = docPath
+  var titleIndex = hindex({
+    log: str.log,
+    db: sublevel(db, 'doc'),
+    map: function (node, next) {
+      console.log('idx', node.value)
+      if (node.value.type === 'title') {
+        titleIndex.db.put('title', node.value.title, function (err) {
+          console.log('wrote title', err)
+          emitter.emit('gotDocumentTitle', node.value.title)
+        })
+      }
+      next()
+    }
+  })
   var index
   var chars
   var localOpQueue = []
   var remoteOpQueue = []
+
+  titleIndex.ready(function () {
+    titleIndex.db.get('title', function (err, title) {
+      console.log('res', err, title)
+      if (title) emitter.emit('gotDocumentTitle', title)
+    })
+  })
 
   // Receive remote edits
   str.log.on('add', function (node) {
@@ -143,6 +167,16 @@ module.exports = function (docPath, editor) {
     db.close(cb)
   }
 
-  return { unregister: unregister }
+  function setTitle (name, cb) {
+    str.log.append({ type: 'title', title: name }, function (err) {
+      if (err) return cb(err)
+      titleIndex.ready(cb)
+    })
+  }
+
+  return {
+    unregister: unregister,
+    setTitle: setTitle
+  }
 }
 

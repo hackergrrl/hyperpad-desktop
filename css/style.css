@@ -42,3 +42,9 @@ body {
   font-family: sans-serif;
   color: #222222;
 }
+.doc-title-input {
+  font-weight: bold;
+  width: 100%;
+  font-size: 32px;
+  margin-bottom: 15px;
+}

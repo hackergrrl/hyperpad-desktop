@@ -12,12 +12,12 @@ var choo = require('choo')
 var html = require('choo/html')
 
 var editor
-var currentDoc
 
 var app = choo()
 app.use(function (state, emitter) {
   state.documents = []
   state.selectedDocumentIdx = -1
+  state.editingDocumentTitle = false
 
   setTimeout(function () {
     state.editor = new Quill('#editor', {
@@ -26,15 +26,19 @@ app.use(function (state, emitter) {
     })
   }, 500)
 
-  getLocalDocs(function (err, docs) {
-    if (err) throw err
-    state.documents = docs
-    emitter.emit('render')
-  })
+  refreshDocList()
+
+  function refreshDocList () {
+    getLocalDocs(function (err, docs) {
+      if (err) throw err
+      state.documents = docs.map(function (hash) { return { hash: hash, title: 'u'+hash } })
+      emitter.emit('render')
+    })
+  }
 
   emitter.on('createDocument', function () {
     console.log('event: createDocument')
-    createDocument()
+    createDocument(refreshDocList)
   })
 
   emitter.on('addDocument', function (hash) {
@@ -43,10 +47,29 @@ app.use(function (state, emitter) {
   })
 
   emitter.on('selectDocument', function (i) {
-    console.log('event: selectDocument', i)
     state.selectedDocumentIdx = i
     emitter.emit('render')
-    selectDocument(state.documents[i], state.editor)
+    selectDocument(state, emitter, state.documents[i].hash, state.editor)
+  })
+
+  emitter.on('gotDocumentTitle', function (title) {
+    state.documents[state.selectedDocumentIdx].title = title
+    emitter.emit('render')
+  })
+
+  emitter.on('clickDocumentTitle', function () {
+    state.editingDocumentTitle = true
+    emitter.emit('render')
+    setTimeout(function () { document.getElementById('doc-title').focus() }, 150)
+  })
+  emitter.on('setDocumentTitle', function (title) {
+    state.editingDocumentTitle = false
+    if (!title) emitter.emit('render')
+    else {
+      state.currentDoc.setTitle(title, function () {
+        emitter.emit('render')
+      })
+    }
   })
 })
 app.route('/', mainView)
@@ -59,11 +82,46 @@ function mainView (state, emit) {
         ${renderDocumentList(state, emit)}
       </div>
       <div id="right" class="right-side">
-        <h1 id="doc-title">Untitled hyperpad document</h1>
+        ${renderDocumentTitle(state, emit)}
         ${renderEditor()}
       </div>
     </body>
   `
+}
+
+function renderDocumentTitle (state, emit) {
+  if (state.editingDocumentTitle) {
+    return html`
+      <input class="doc-title-input" type="text" id="doc-title" onkeyup=${onKeyPress} value="${getDocumentTitle(state)}" onblur=${onBlur}>
+    `
+  } else {
+    return html`
+      <h1 id="doc-title" onclick=${onClick}>${getDocumentTitle(state)}</h1>
+    `
+  }
+
+  function onClick () {
+    console.log('clicky')
+    emit('clickDocumentTitle')
+  }
+
+  function onKeyPress (ev) {
+    if (ev.keyCode === 27) {
+      emit('setDocumentTitle', null)
+    } else if (ev.keyCode === 13) {
+      console.log('title', this.value)
+      emit('setDocumentTitle', this.value)
+    }
+  }
+
+  function onBlur () {
+    emit('setDocumentTitle', null)
+  }
+
+  function getDocumentTitle (state) {
+    if (state.selectedDocumentIdx >= 0) return state.documents[state.selectedDocumentIdx].title
+    else return ''
+  }
 }
 
 function renderEditor () {
@@ -79,21 +137,15 @@ function renderEditor () {
   return editorElement
 }
 
-function createDocument () {
+function createDocument (cb) {
   var name = randomBytes(20).toString('hex')
   var userDataPath = ipc.sendSync('get-user-data-path')
   var docPath = path.join(userDataPath, name)
   var db = level(docPath)
   var str = hstring(db)
   // TODO: break this out into hyper-doc module (named document)
-  str.log.append({'doc-id': name, 'doc-name': name}, function (err) {
-    db.close(function () {
-      getLocalDocs(function (err, docs) {
-        if (err) throw err
-        docSidebar.updateDocs(docs)
-        docSidebar.updateSelection(docs.indexOf(name))
-      })
-    })
+  str.log.append({type: 'id', name}, function (err) {
+    db.close(cb)
   })
 }
 
@@ -101,16 +153,16 @@ function addDocument () {
   alert('TODO: implement me')
 }
 
-function selectDocument (name, editor) {
+function selectDocument (state, emitter, name, editor) {
   document.getElementById('doc-title').innerText = name
-  if (currentDoc) {
-    currentDoc.unregister(function () {
+  if (state.currentDoc) {
+    state.currentDoc.unregister(function () {
       var userDataPath = ipc.sendSync('get-user-data-path')
-      currentDoc = Doc(path.join(userDataPath, name), editor)
+      state.currentDoc = Doc(path.join(userDataPath, name), editor, emitter)
     })
   } else {
     var userDataPath = ipc.sendSync('get-user-data-path')
-    currentDoc = Doc(path.join(userDataPath, name), editor)
+    state.currentDoc = Doc(path.join(userDataPath, name), editor, emitter)
   }
 }
 

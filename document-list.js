@@ -32,7 +32,7 @@ module.exports = function (state, emit) {
     var clazz = 'docitem'
     if (selected) clazz = 'docitem-selected'
     return html`<div class="${clazz}" onclick=${onClick}>
-      <div class="docitem-contents">${elm}</div>
+      <div class="docitem-contents">${elm.title}</div>
     </div>`
     function onClick () {
       emit('selectDocument', i)

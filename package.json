@@ -18,10 +18,12 @@
     "choo": "^6.8.0",
     "electron": "^1.7.5",
     "hyper-string": "^3.1.0",
+    "hyperlog-index": "^5.2.2",
     "level": "^2.1.1",
     "mkdirp": "^0.5.1",
     "quill": "^1.3.4",
-    "randombytes": "^2.0.6"
+    "randombytes": "^2.0.6",
+    "subleveldown": "^2.1.0"
   },
   "devDependencies": {
     "cross-env": "^5.1.1",
