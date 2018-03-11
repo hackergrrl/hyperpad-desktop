@@ -25,12 +25,14 @@ body {
   border-width: 0px 1px 1px 1px;
   border-style: solid;
   border-color: #AAAAAA;
+  height: 32px;
 }
 .docitem-selected {
   border-width: 0px 1px 1px 1px;
   border-style: solid;
   border-color: #AAAAAA;
   background: #DFDFDF;
+  height: 32px;
 }
 .docitem-special {
   border-width: 0px 1px 1px 1px;
@@ -39,9 +41,10 @@ body {
   background: #F1F1F1;
   color: #999999;
   text-align: center;
+  height: 32px;
 }
 .docitem-contents {
-  padding: 15px;
+  display: inline;
   font-size: 15px;
   font-family: sans-serif;
   color: #222222;
@@ -51,4 +54,19 @@ body {
   width: 100%;
   font-size: 32px;
   margin-bottom: 15px;
+}
+.closeButton {
+  float: right;
+  margin-top: 6px;
+  margin-right: 10px;
+  padding-left: 4px;
+  width: 15px;
+  height: 18px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: red;
+  background-color: red;
+  color: white;
+  font-family: sans-serif;
+  font-weight: bold;
 }

@@ -7,7 +7,8 @@ var hstring = require('hyper-string')
 
 module.exports = {
   list: list,
-  create: create
+  create: create,
+  del: del
 }
 
 function create (cb) {
@@ -39,7 +40,7 @@ function create (cb) {
 function list (cb) {
   var userDataPath = ipc.sendSync('get-user-data-path')
 
-  // update doc list
+  // get doc list
   var docListPath = path.join(userDataPath, 'docs.json')
   var hashes = []
   if (fs.existsSync(docListPath)) {
@@ -54,10 +55,24 @@ function list (cb) {
       var db = level(path.join(userDataPath, name))
       db.get('!doc!title', function (err, title) {
         db.close(function () {
-          hashes[idx] = { hash: name, title: title || name }
+          hashes[idx] = { hash: name, title: title || name.substring(0, 15) }
           if (!--pending) cb(null, hashes)
         })
       })
     })
   })
 }
+
+function del (idx, cb) {
+  var userDataPath = ipc.sendSync('get-user-data-path')
+  var docListPath = path.join(userDataPath, 'docs.json')
+  if (fs.existsSync(docListPath)) {
+    var json = JSON.parse(fs.readFileSync(docListPath, 'utf8'))
+    json.docs.splice(idx, 1)
+    fs.writeFileSync(docListPath, JSON.stringify(json), 'utf8')
+    cb()
+  } else {
+    cb(new Error('no such doc! this shouldnt happen! aah!'))
+  }
+}
+

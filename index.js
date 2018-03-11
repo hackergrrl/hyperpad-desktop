@@ -44,6 +44,16 @@ app.use(function (state, emitter) {
     addDocument(hash)
   })
 
+  emitter.on('deleteDocument', function (i) {
+    localDocs.del(i, function () {
+      state.documents.splice(i, 1)
+      if (state.selectedDocumentIdx === i) {
+        state.selectedDocumentIdx--
+      }
+      emitter.emit('render')
+    })
+  })
+
   emitter.on('selectDocument', function (i) {
     state.selectedDocumentIdx = i
     emitter.emit('render')
@@ -68,6 +78,15 @@ app.use(function (state, emitter) {
         emitter.emit('render')
       })
     }
+  })
+
+  emitter.on('mouseEnterDocument', function (i) {
+    state.mouseoverDocIdx = i
+    emitter.emit('render')
+  })
+  emitter.on('mouseExitDocument', function (i) {
+    state.mouseoverDocIdx = -1
+    emitter.emit('render')
   })
 })
 app.route('/', mainView)
