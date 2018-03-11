@@ -32,8 +32,11 @@ module.exports = function (state, emit) {
     var clazz = 'docitem'
     if (selected) clazz = 'docitem-selected'
     return html`<div class="${clazz}" onclick=${onClick} onmouseover=${onEnter} onmouseleave=${onExit}>
-      <div class="docitem-contents">${elm.title}</div>
       ${mouseover ? renderCloseButton(i) : html``}
+      <div class="docitem-contents">
+        <div class="docitem-contents-top">${elm.title}</div>
+        <div class="docitem-contents-bottom">${state.documents[i].hash}</div>
+      </div>
     </div>`
     function onClick () {
       emit('selectDocument', i)

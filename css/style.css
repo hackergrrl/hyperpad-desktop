@@ -25,14 +25,14 @@ body {
   border-width: 0px 1px 1px 1px;
   border-style: solid;
   border-color: #AAAAAA;
-  height: 32px;
+  height: 40px;
 }
 .docitem-selected {
   border-width: 0px 1px 1px 1px;
   border-style: solid;
   border-color: #AAAAAA;
   background: #DFDFDF;
-  height: 32px;
+  height: 40px;
 }
 .docitem-special {
   border-width: 0px 1px 1px 1px;
@@ -41,13 +41,24 @@ body {
   background: #F1F1F1;
   color: #999999;
   text-align: center;
-  height: 32px;
+  height: 40px;
 }
 .docitem-contents {
   display: inline;
-  font-size: 15px;
-  font-family: sans-serif;
   color: #222222;
+}
+.docitem-contents-top {
+  padding-left: 3px;
+  padding-top: 3px;
+  font-family: sans-serif;
+  color: black;
+  font-weight: bold;
+  font-size: 18px;
+}
+.docitem-contents-bottom {
+  font-family: sans-serif;
+  color: grey;
+  font-size: 11px;
 }
 .doc-title-input {
   font-weight: bold;

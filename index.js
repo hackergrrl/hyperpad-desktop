@@ -113,7 +113,10 @@ function renderDocumentTitle (state, emit) {
     `
   } else {
     return html`
-      <h1 id="doc-title" onclick=${onClick}>${getDocumentTitle(state)}</h1>
+      <div>
+        <h1 id="doc-title" onclick=${onClick}>${getDocumentTitle(state)}</h1>
+        <p style="float:right; margin-top: -40px;">${(state.documents[state.selectedDocumentIdx] || {hash:''}).hash}</p>
+      </div>
     `
   }
 
