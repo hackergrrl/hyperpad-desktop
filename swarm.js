@@ -1,4 +1,5 @@
 var dswarm = require('discovery-swarm')
+var getport = require('get-port')
 
 module.exports = function (hash, str) {
   var swarm = dswarm()
@@ -8,11 +9,13 @@ module.exports = function (hash, str) {
     peers: 0
   }
 
-  // TODO: pick free port
-  swarm.listen(2839)
+  getport().then(function (port) {
+    console.log('Listening on port', port)
+    swarm.listen(port)
 
-  swarm.join(hash)
-  console.log('JOINED', hash)
+    swarm.join(hash)
+    console.log('JOINED', hash)
+  })
 
   swarm.on('connection', function (conn, info) {
     console.log('REPLICATE', info)
