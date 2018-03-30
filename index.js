@@ -23,15 +23,12 @@ app.use(function (state, emitter) {
     })
   }, 500)
 
-  refreshDocList()
-
-  function refreshDocList () {
-    localDocs.list(function (err, docs) {
-      if (err) throw err
-      state.documents = docs
-      emitter.emit('render')
-    })
-  }
+  // Load up initial doc list
+  localDocs.list(function (err, docs) {
+    if (err) throw err
+    state.documents = docs
+    emitter.emit('render')
+  })
 
   emitter.on('createDocument', function () {
     localDocs.create(function (err, hash) {
@@ -171,16 +168,16 @@ function addDocument () {
   alert('TODO: implement me')
 }
 
-function selectDocument (state, emitter, name, editor) {
-  document.getElementById('doc-title').innerText = name
+function selectDocument (state, emitter, hash, editor) {
+  document.getElementById('doc-title').innerText = hash
   if (state.currentDoc) {
-    state.currentDoc.unregister(function () {
-      var userDataPath = ipc.sendSync('get-user-data-path')
-      state.currentDoc = Doc(path.join(userDataPath, name), editor, emitter)
-    })
+    state.currentDoc.unregister(start)
   } else {
+    start()
+  }
+
+  function start () {
     var userDataPath = ipc.sendSync('get-user-data-path')
-    state.currentDoc = Doc(path.join(userDataPath, name), editor, emitter)
+    state.currentDoc = Doc(path.join(userDataPath, hash), hash, editor, emitter)
   }
 }
-

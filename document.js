@@ -3,21 +3,24 @@ var level = require('level')
 var path = require('path')
 var hindex = require('hyperlog-index')
 var sublevel = require('subleveldown')
+var dswarm = require('./swarm')
 
-module.exports = function (docPath, editor, emitter) {
+module.exports = function (docPath, hash, editor, emitter) {
   editor.focus()
 
   var db = level(docPath)
   var str = hstring(db)
+  this.str = str
+
+  var swarm = dswarm(hash, str)
+
   var title = docPath
   var titleIndex = hindex({
     log: str.log,
     db: sublevel(db, 'doc'),
     map: function (node, next) {
-      console.log('idx', node.value)
       if (node.value.type === 'title') {
         titleIndex.db.put('title', node.value.title, function (err) {
-          console.log('wrote title', err)
           emitter.emit('gotDocumentTitle', node.value.title)
         })
       }
@@ -164,7 +167,9 @@ module.exports = function (docPath, editor, emitter) {
     editor.deleteText(0, 99999999999, 'silent')
     editor.off('text-change', onTextChange)
     str.log.removeAllListeners()  // TODO: we can do better!
-    db.close(cb)
+    db.close(function () {
+      swarm.swarm.destroy(cb)
+    })
   }
 
   function setTitle (name, cb) {

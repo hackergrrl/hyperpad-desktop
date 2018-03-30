@@ -16,6 +16,7 @@
   "keywords": [],
   "dependencies": {
     "choo": "^6.8.0",
+    "discovery-swarm": "^4.4.2",
     "electron": "^1.7.5",
     "hyper-string": "^3.1.0",
     "hyperlog-index": "^5.2.2",
