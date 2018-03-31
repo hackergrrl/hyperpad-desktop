@@ -39,6 +39,7 @@ app.use(function (state, emitter) {
 
   emitter.on('addDocument', function (hash) {
     state.documents.unshift({ hash: hash, title: hash })
+    localDocs.add(hash)
     emitter.emit('selectDocument', 0)
   })
 

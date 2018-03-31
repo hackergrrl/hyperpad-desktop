@@ -8,6 +8,7 @@ var hstring = require('hyper-string')
 module.exports = {
   list: list,
   create: create,
+  add: add,
   del: del
 }
 
@@ -35,6 +36,20 @@ function create (cb) {
       cb(null, id)
     })
   })
+}
+
+function add (hash) {
+  // update doc list
+  var userDataPath = ipc.sendSync('get-user-data-path')
+  var docListPath = path.join(userDataPath, 'docs.json')
+  var docList
+  if (fs.existsSync(docListPath)) {
+    docList = JSON.parse(fs.readFileSync(docListPath, 'utf8'))
+  } else {
+    docList = { docs: [] }
+  }
+  docList.docs.unshift(hash)
+  fs.writeFileSync(docListPath, JSON.stringify(docList), 'utf8')
 }
 
 function list (cb) {
