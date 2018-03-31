@@ -38,7 +38,8 @@ app.use(function (state, emitter) {
   })
 
   emitter.on('addDocument', function (hash) {
-    addDocument(hash)
+    state.documents.unshift({ hash: hash, title: hash })
+    emitter.emit('selectDocument', 0)
   })
 
   emitter.on('deleteDocument', function (i) {
@@ -162,10 +163,6 @@ function renderEditor (state) {
   }
   editorElm = editorElement
   return editorElement
-}
-
-function addDocument () {
-  alert('TODO: implement me')
 }
 
 function selectDocument (state, emitter, hash, editor) {

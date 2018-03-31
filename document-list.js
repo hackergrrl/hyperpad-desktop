@@ -20,11 +20,18 @@ module.exports = function (state, emit) {
   }
 
   function renderAddDocRow () {
-    return html`<div class="docitem-special" onclick=${onClickAdd}>
+    return html`<div class="docitem-special">
       <div class="docitem-contents">Add pad from hash</div>
+        <div>
+          <input type="text" onkeydown=${onKeyDown}></input>
+        </div>
       </div>`
-    function onClickAdd () {
-      emit('addDocument')
+    function onKeyDown (e) {
+      if (e.keyCode === 13) {
+        var hash = this.value
+        this.value = ''
+        emit('addDocument', hash)
+      }
     }
   }
 
