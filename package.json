@@ -11,6 +11,7 @@
   "main": "app.js",
   "scripts": {
     "lint": "standard",
+    "start": "electron app.js",
     "rebuild-leveldb": "cd node_modules/leveldown && cross-env HOME=~/.electron-gyp node-gyp rebuild --target=1.7.5 --runtime=electron --arch=x64 --dist-url=https://atom.io/download/atom-shell"
   },
   "keywords": [],

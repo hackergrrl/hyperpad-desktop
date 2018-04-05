@@ -10,8 +10,22 @@ who are interested in it.
 
 ## Current Status
 
-Under development; mostly doesn't work. Feel free to fiddle with it, but don't
-use it for anything important.
+Alpha quality: you can create docs, share them with others, and edit in
+realtime. Some things may not work correctly.
+
+## Install & Run
+
+```
+$ git clone git@github.com:noffle/hyperpad-desktop
+
+$ cd hyperpad-desktop
+
+$ npm install
+
+$ npm run rebuild-leveldb
+
+$ npm run start
+```
 
 ## License
 
