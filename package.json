@@ -12,7 +12,8 @@
   "scripts": {
     "lint": "standard",
     "start": "electron app.js",
-    "rebuild-leveldb": "cd node_modules/leveldown && cross-env HOME=~/.electron-gyp node-gyp rebuild --target=1.7.5 --runtime=electron --arch=x64 --dist-url=https://atom.io/download/atom-shell"
+    "rebuild": "electron-rebuild",
+    "postinstall": "npm run rebuild"
   },
   "keywords": [],
   "dependencies": {
@@ -32,6 +33,7 @@
   "devDependencies": {
     "cross-env": "^5.1.1",
     "cross-spawn": "^5.1.0",
+    "electron-rebuild": "^1.7.3",
     "standard": "~10.0.0"
   },
   "license": "ISC"
