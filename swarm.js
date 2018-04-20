@@ -10,21 +10,23 @@ module.exports = function (hash, str) {
   }
 
   getport().then(function (port) {
-    console.log('Listening on port', port)
+    console.log('listening on swarm port', port)
     swarm.listen(port)
 
     swarm.join(hash)
-    console.log('JOINED', hash)
+    console.log('joined swarm for', hash)
   })
 
   swarm.on('connection', function (conn, info) {
-    console.log('REPLICATE', info)
+    console.log('new peer', info)
     var r = str.log.replicate({live:true})
     r.pipe(conn).pipe(r)
       .once('end', function () {
+        console.log('lost peer')
         res.peers--
       })
-      .once('error', function () {
+      .once('error', function (err) {
+        console.log('lost peer', err)
         res.peers--
       })
     res.peers++
