@@ -139,10 +139,10 @@ module.exports = function (docPath, hash, editor, emitter) {
         editor.insertText(prev, op.txt, 'silent')
       } else if (op.op === 'delete') {
         // Update index
-        var res = index.delete(op.from, op.to)
         var from = index.pos(op.from)
-        var to = index.pos(op.to)
-        var numToDelete = from - to
+        var to = index.pos(op.to) + 1
+        index.delete(op.from, op.to)
+        var numToDelete = to - from
         chars.splice(from, numToDelete)
 
         // Update editor
