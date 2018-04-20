@@ -2,7 +2,7 @@
   "name": "hyperpad-desktop",
   "description": "Peer-to-peer collaborative text editing on your desktop with Electron.",
   "author": "Stephen Whitmore <sww@eight.net>",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": {
     "url": "git://github.com/noffle/hyperpad-desktop.git"
   },
