@@ -22,7 +22,7 @@ $ cd hyperpad-desktop
 
 $ npm install
 
-$ npm run rebuild-leveldb
+$ npm run rebuild
 
 $ npm run start
 ```
